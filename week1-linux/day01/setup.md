@@ -13,14 +13,19 @@
 python3 --version
 结果: bash: python3: command not found...
 说明系统未预装 Python3。
+
+### 2.更换阿里云yum端
+
 CentOS 7 默认官方源无法连接，报错 Could not resolve host: mirrorlist.centos.org
 执行
 sudo mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
 sudo curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 sudo yum clean all && sudo yum makecache
 结果: Metadata Cache Created，阿里云源换源成功。
+### 3. 安装 Python3 和 pip3
 sudo yum install -y python3 python3-pip
 结果: Complete!，安装成功。
+### 4. 验证版本与检验
 python3 --version   # Python 3.6.8
 pip3 --version      # pip 9.0.3
 python3 -c "print('Hello World')"
