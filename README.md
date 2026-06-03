@@ -11,7 +11,7 @@
 - **背景**：专科，铁道机械专业转网络工程师，已离职高密度学习
 - **基础**：思科模拟器经验，会VLAN/OSPF/静态路由，HCIA-Datacom 学习中
 - **设备**：i5-11260 + 16G + RTX3050，VMware 17.5，CentOS 7.6（1908）
-- **模拟器**：GNS3 / Packet Tracer（Week 3 计划装 EVE-NG）
+- **模拟器**： Packet Tracer（Week 3 计划装 EVE-NG）
 - **认证路线**：HCIA-Datacom（Week 1）→ HCIP（第2个月）
 
 ---
