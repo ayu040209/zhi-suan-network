@@ -50,14 +50,19 @@
 - [x] 子网划分补完（5道题，第1/3题做错已纠正）
 - [x] Linux Ch5：文件权限（`chmod` `chown` `umask`）
 - [x] Python Netmiko + Paramiko 安装成功
-- [ ] GitHub push day02（待补）
+- [x] GitHub push day02（待补）
 
-### Day 3（2026-06-03）← 今天
-- [ ] HCIA 第40-46集：生成树 STP / RSTP
-- [ ] HCIA 第47-53集：VLAN间路由 + 链路聚合/堆叠
-- [ ] Linux Ch6：文件与目录管理
-- [ ] Python 脚本1：Netmiko SSH 单台交换机执行 show 命令
-- [ ] GitHub 补推 day02 + day03
+### Day 3（2026-06-03）
+- [x] HCIA 第40-46集：生成树 STP / RSTP
+- [x] HCIA 第47-53集：VLAN间路由 + 链路聚合/堆叠
+- [x] Linux Ch6：文件与目录管理
+- [x] Python 脚本1：Netmiko SSH 单台交换机执行 show 命令
+- [x] GitHub 补推 day02 + day03
+
+### Day 4（2026-06-04）
+- [x] 安装EVE-NG，配置思科交换机（模拟）
+- [x] Python 配合EVE-NG学习
+- [x] Linux CH7
 
 ---
 
