@@ -1,0 +1,74 @@
+# Week 2 Day 8 - 实验环境：EVE-NG 批量 SSH 拓扑
+
+## 拓扑结构
+[CentOS 7.6 VM]  <--NAT(Cloud0)-->  [vIOS-1] 192.168.253.11
+[vIOS-2] 192.168.253.12
+[vIOS-3] 192.168.253.13
+- **网段**：192.168.253.0/24（VMware NAT / VMnet8）
+- **CentOS IP**：192.168.253.129（ens33）
+- **网关**：192.168.253.2（VMware 虚拟 NAT 路由器）
+- **EVE-NG 连接**：每台 vIOS 的 Gi0/0 均接入 Cloud0（Management）
+
+## 设备基础配置（Cisco IOSv）
+
+### 通用模板（以 vIOS-1 / .11 为例）
+```text
+enable
+configure terminal
+hostname SW1
+no ip domain-lookup
+
+! 本地用户与特权密码
+username admin privilege 15 secret cisco123
+enable secret cisco123
+
+! SSH 必备
+ip domain-name lab.local
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+
+! VTY 只允许 SSH + 本地认证
+line vty 0 15
+ transport input ssh
+ login local
+ exit
+
+! 管理 IP
+interface GigabitEthernet0/0
+ ip address 192.168.253.11 255.255.255.0
+ no shutdown
+ exit
+
+! 默认网关（出网段时用）
+ip default-gateway 192.168.253.2
+
+end
+write memory
+
+三台设备ip分配
+| 设备           | 管理 IP          | 网关            |
+| ------------ | -------------- | ------------- |
+| vIOS-1 (SW1) | 192.168.253.11 | 192.168.253.2 |
+| vIOS-2 (SW2) | 192.168.253.12 | 192.168.253.2 |
+| vIOS-3 (SW3) | 192.168.253.13 | 192.168.253.2 |
+
+连通性测试
+
+# CentOS 侧
+ping -c 2 192.168.253.11
+ping -c 2 192.168.253.12
+ping -c 2 192.168.253.13
+
+# 端口探测（确认 SSH 服务已就绪）
+nc -vz 192.168.253.11 22
+nc -vz 192.168.253.12 22
+nc -vz 192.168.253.13 22
+
+# 手动 SSH 一次，写入 known_hosts
+ssh admin@192.168.253.11
+
+关键概念速查
+no ip domain-lookup：打错命令时不发起 DNS 查询，避免卡顿
+privilege 15：直接赋予最高权限，免去了 enable 后再输密码的交互
+crypto key generate rsa：生成 SSH 加密所需的公钥/私钥对
+transport input ssh：VTY 线路仅接受 SSH，拒绝不安全的 Telnet
