@@ -1,0 +1,118 @@
+
+# Week 2 Day 8 - Python 并发批量 SSH（ThreadPoolExecutor + Netmiko）
+
+## 学习目标
+- 使用 `concurrent.futures.ThreadPoolExecutor` 实现并发登录
+- 使用 `as_completed` 实现"先完成先处理"
+- 将多台设备的 show 命令结果保存到带时间戳的文本文件
+
+## 完整脚本：`batch_ssh_day8.py`
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from netmiko import ConnectHandler
+from datetime import datetime
+
+# ==================== 第1处修改：设备清单 ====================
+devices = [
+    {
+        "device_type": "cisco_ios",
+        "host": "192.168.253.11",    # ← 改成你的实际 IP
+        "username": "admin",
+        "password": "cisco123",      # ← 改成你的实际密码
+        "secret": "cisco123",        # ← enable 密码（privilege 15 时可与 password 相同）
+        "port": 22,
+    },
+    {
+        "device_type": "cisco_ios",
+        "host": "192.168.253.12",
+        "username": "admin",
+        "password": "cisco123",
+        "secret": "cisco123",
+        "port": 22,
+    },
+    {
+        "device_type": "cisco_ios",
+        "host": "192.168.253.13",
+        "username": "admin",
+        "password": "cisco123",
+        "secret": "cisco123",
+        "port": 22,
+    },
+]
+
+# ==================== 第2处修改：巡检命令 ====================
+commands = [
+    "show ip interface brief",
+    "show version | include uptime",
+    "show clock",
+]
+
+
+def ssh_to_device(device_info):
+    """
+    单台设备连接函数
+    类比：同时开 3 个 SecureCRT 窗口，各连一台交换机敲 show 命令
+    """
+    ip = device_info["host"]
+    result_lines = [
+        f"\n{'='*50}",
+        f"📌 设备 IP: {ip}",
+        f"⏰ 执行时间: {datetime.now().strftime('%H:%M:%S')}",
+        f"{'='*50}",
+    ]
+
+    try:
+        conn = ConnectHandler(**device_info)
+        conn.enable()
+
+        for cmd in commands:
+            output = conn.send_command(cmd)
+            result_lines.append(f"\n>>> {cmd}\n{output}")
+
+        conn.disconnect()
+        result_lines.append(f"\n✅ {ip} 执行完毕")
+        return "\n".join(result_lines)
+
+    except Exception as e:
+        # 单台失败不影响其他线程
+        return f"\n❌ {ip} 连接失败: {str(e)}"
+
+
+def main():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"day8_batch_{timestamp}.txt"
+
+    print(f"🚀 开始批量巡检: {datetime.now().strftime('%H:%M:%S')}")
+    print(f"📝 结果将保存到: {filename}\n")
+
+    # ==================== 第3处修改：并发数 ====================
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        # 提交任务，生成 future 对象
+        future_to_ip = {
+            executor.submit(ssh_to_device, dev): dev["host"]
+            for dev in devices
+        }
+
+        # 打开文件，边执行边写入
+        with open(filename, "w", encoding="utf-8") as f:
+            # as_completed: 谁最先回显，就先处理谁
+            for future in as_completed(future_to_ip):
+                ip = future_to_ip[future]
+                try:
+                    result = future.result()
+                    print(result)
+                    f.write(result + "\n")
+                except Exception as e:
+                    err_msg = f"\n💥 {ip} 线程异常: {str(e)}"
+                    print(err_msg)
+                    f.write(err_msg + "\n")
+
+    print(f"\n🏁 全部完成，文件: {filename}")
+
+
+if __name__ == "__main__":
+    main()
