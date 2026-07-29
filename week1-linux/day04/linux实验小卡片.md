@@ -87,11 +87,3 @@
 ├── mount 挂载
 └── /etc/fstab 配置开机自动挂载
 
-## 建议的 GitHub 目录结构
-
-你可以把这两份文件放在仓库的 `linux-notes/` 或 `week-1/` 目录下，命名规范：
-repo/
-├── linux-notes/
-│   ├── linux-day3-cards.md   ← Ch6 文件与目录管理
-│   ├── linux-day4-cards.md   ← Ch7 磁盘与文件系统管理
-│   └── ...
